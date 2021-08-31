@@ -9,3 +9,5 @@ Based on the Twitter plugin from the [Scheduled Player package](https://github.c
 # Settings
 
 # Changelog
+
+## Version 0.1 Alpha
