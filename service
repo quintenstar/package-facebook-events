@@ -1,0 +1,67 @@
+#!/usr/bin/python2.7
+import sys
+
+# sys.path.insert(0, 'dependencies.zip')
+import json
+import time
+import traceback
+
+try:
+    from hosted import node, config
+except ImportError:
+    print("Import error on hosted node.write_json")
+
+    class Config(object):
+        poll_interval = 60
+        events_max = 5
+
+        access_token = ""
+        pages = [
+            {"name": "1", "id": ""},
+            {"name": "2", "id": ""},
+        ]
+
+        def restart_on_update(self):
+            pass
+
+    config = Config()
+
+    class node(object):
+        @staticmethod
+        def write_json(file, text):
+            print (json.dumps(text, indent=4))
+            with open("events.json.test", "w") as fp:
+                json.dump(text, fp, indent=2)
+
+
+from facebook import cleanup, get_events
+
+
+def main():
+    """wait till the configuration is non-empty. hosted
+       will restart this process when the configuration changes. """
+    config.restart_on_update()
+    print >> sys.stderr, "config facebook updated"
+
+    while 1:
+        try:
+            cleanup()
+
+            events = {}
+            for page in config.pages:
+                print >> sys.stderr, "page name: %s" % page["name"]
+                events[page["name"]] = get_events(
+                    config.access_token, page["id"], events_max=config.events_max
+                )
+                print >> sys.stderr, events
+
+            node.write_json("events.json", events)
+        except:
+            traceback.print_exc()
+            time.sleep(config.poll_interval)
+        else:
+            time.sleep(config.poll_interval)
+
+
+if __name__ == "__main__":
+    main()

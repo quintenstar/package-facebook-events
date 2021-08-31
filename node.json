@@ -1,0 +1,116 @@
+{
+  "name": "Plugin: Facebook Events",
+  "permissions": {
+    "network": "Needs to access the Facebook API"
+  },
+  "options": [
+    {
+      "title": "Facebook Events",
+      "type": "section"
+    },
+    {
+      "title": "Poll interval (seconds)",
+      "ui_width": 6,
+      "name": "poll_interval",
+      "type": "integer",
+      "default": 600
+    },
+    {
+      "title": "Events (per page)",
+      "ui_width": 6,
+      "name": "events_max",
+      "type": "select",
+      "options": [
+        [3, "3 events"],
+        [4, "4 events"],
+        [5, "5 events"],
+        [6, "6 events"]
+      ],
+      "default": 5
+    },
+    {
+      "title": "Pages",
+      "name": "pages",
+      "type": "list",
+      "itemname": "Page",
+      "items": [
+        {
+          "title": "Name",
+          "ui_width": 6,
+          "name": "name",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "title": "Page ID",
+          "ui_width": 6,
+          "name": "id",
+          "type": "string",
+          "default": ""
+        },
+        {
+          "title": "Fallback Asset",
+          "ui_width": 6,
+          "name": "fallback_asset",
+          "type": "resource",
+          "valid": ["image"],
+          "default": "node.png"
+        }
+      ]
+    },
+    {
+      "title": "Presentation",
+      "type": "section"
+    },
+    {
+      "title": "Font",
+      "ui_width": 3,
+      "name": "font",
+      "type": "font",
+      "doc_link": true,
+      "default": "default-font.ttf"
+    },
+    {
+      "title": "Margin",
+      "ui_width": 3,
+      "name": "margin",
+      "type": "select",
+      "options": [
+        [0, "0"],
+        [10, "10"],
+        [20, "20"],
+        [30, "30"],
+        [40, "40"]
+      ],
+      "default": 10
+    },
+    {
+      "title": "Default Event Image",
+      "ui_width": 4,
+      "name": "default_image",
+      "type": "resource",
+      "valid": ["image"],
+      "default": "node.png"
+    },
+    {
+      "title": "Background",
+      "ui_width": 3,
+      "name": "background_color",
+      "type": "color",
+      "default": [1, 1, 1, 1]
+    },
+
+    {
+      "title": "Authentication",
+      "type": "section"
+    },
+    {
+      "title": "Access Token",
+      "ui_width": 6,
+      "name": "access_token",
+      "type": "string",
+      "default": ""
+    }
+  ],
+  "deferred": ["tile.lua"]
+}
