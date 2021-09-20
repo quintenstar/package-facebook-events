@@ -3,7 +3,7 @@
   "author": "Quinten Star",
   "desc": "Shows a schedule of upcoming Facebook page events. Works standalone and as plugin for the Scheduled Player package.",
   "repository": "https://github.com/quintenstar/package-facebook-events",
-  "version": "0.1",
+  "version": "0.1.0",
   "lifecycle": "alpha",
   "platforms": [
     "pi/epoch-1",

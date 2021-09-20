@@ -128,9 +128,10 @@ if __name__ == "__main__":
     import json
 
     from dotenv import dotenv_values
-    config = dotenv_values(".env")
 
-    events = get_events(config["ACCESS_TOKEN"], config["PAGE_ID"])
+    env_config = dotenv_values(".env")
+
+    events = get_events(env_config["ACCESS_TOKEN"], env_config["PAGE_ID"])
 
     with open("events.json.test", "w") as fp:
         json.dump(events, fp, indent=2)
