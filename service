@@ -5,6 +5,10 @@ import sys
 import json
 import time
 import traceback
+import functools
+
+
+from facebook import cleanup, get_events
 
 try:
     from hosted import node, config
@@ -29,38 +33,83 @@ except ImportError:
     class node(object):
         @staticmethod
         def write_json(file, text):
-            print (json.dumps(text, indent=4))
+            print(json.dumps(text, indent=4))
             with open("events.json.test", "w") as fp:
                 json.dump(text, fp, indent=2)
 
 
-from facebook import cleanup, get_events
+POLL_INTERVAL = 60
+
+
+class PollingException(Exception):
+    pass
+
+
+class Poll:
+    def __init__(self, func, polling_rate=60, max_polling_rate=3600):
+        functools.update_wrapper(self, func)
+        self.func = func
+        self.data = None
+        self.initial_polling_rate = polling_rate
+        self.polling_rate = polling_rate
+        self.max_polling_rate = max_polling_rate
+        self.last_result = 0
+
+    def __call__(self, *args, **kwargs):
+        now = time.time()
+        if now - self.last_result < self.polling_rate:  # too early
+            return self.data
+
+        try:
+            self.data = self.func(*args, **kwargs)
+        except:
+            self.polling_rate = max(self.polling_rate * 2, self.max_polling_rate)
+            raise PollingException
+        else:
+            self.last_result = time.time()
+            self.polling_rate = self.initial_polling_rate
+        finally:
+            return self.data
 
 
 def main():
     """wait till the configuration is non-empty. hosted
        will restart this process when the configuration changes. """
     config.restart_on_update()
-    print >> sys.stderr, "config facebook updated"
+    print("FACEBOOK: config updated")
 
-    while 1:
+    poll_cleanup = Poll(cleanup, polling_rate=config.poll_interval * 5)
+
+    pages = [
+        {
+            "name": page["name"],
+            "id": page["id"],
+            "poll_get_events": Poll(get_events, polling_rate=config.poll_interval),
+            "events_max": config.events_max,
+        }
+        for page in config.pages
+    ]
+
+    events = {page["name"]: "" for page in config.pages}
+
+    while True:
         try:
-            cleanup()
+            poll_cleanup()
 
-            events = {}
-            for page in config.pages:
-                print >> sys.stderr, "page name: %s" % page["name"]
-                events[page["name"]] = get_events(
-                    config.access_token, page["id"], events_max=config.events_max
-                )
-                print >> sys.stderr, events
+            for page in pages:
+                try:
+                    print("FACEBOOK", "page name: %s" % page["name"])
+                    events[page["name"]] = page["poll_get_events"](
+                        config.access_token, page["id"], page["events_max"]
+                    )
+                except PollingException:
+                    pass
 
             node.write_json("events.json", events)
         except:
             traceback.print_exc()
-            time.sleep(config.poll_interval)
-        else:
-            time.sleep(config.poll_interval)
+        finally:
+            time.sleep(POLL_INTERVAL)
 
 
 if __name__ == "__main__":
